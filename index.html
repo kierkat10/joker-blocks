@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="./libs/highlight.js/atom-one-dark.min.css">
+  <script src="./libs/highlight.js/highlight.min.js"></script>
+  <script src="./libs/highlight.js/languages/lua.min.js"></script>
+  <script>
+    // register lua syntax
+    if (typeof window.hljsDefineLua === 'function') {
+      hljs.registerLanguage('lua', window.hljsDefineLua);
+    }
+    hljs.configure({ ignoreUnescapedHTML: true });
+    hljs.highlightAll();
+
+  </script>
+  <!-- <link rel="icon" type="image/png" href="favicon.png"> -->
+  <meta charset="UTF-8">
+  <title>JokerBlocks</title>
+  <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        font-family: sans-serif;
+      }
+      #blocklyDiv {
+        height: 100%;
+        width: 100%;
+        z-index: 0;
+        position: relative;
+      }
+      #liveLuaArea {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        line-height: 1.5;
+        overflow-y: auto;
+        max-height: 100%;
+        font-family: 'Monaco', 'Courier New', monospace;
+      }
+
+      #liveLuaArea code {
+        display: block;
+        white-space: pre;
+      }
+
+      /* Highlight.js color overrides for dark theme */
+      .hljs {
+        background: #1e1e1e !important;
+        color: #d4d4d4;
+      }
+
+      .hljs-string { color: #ce9178; }
+      .hljs-number { color: #b5cea8; }
+      .hljs-literal { color: #569cd6; }
+      .hljs-function { color: #dcdcaa; }
+      .hljs-keyword { color: #569cd6; }
+      .hljs-comment { color: #6a9955; }
+      .hljs-selected {
+        background: #444 !important;
+        display: inline-block;
+        width: 100%;
+      }
+
+      .blocklySvg {
+        font-family: 'Poppins', monospace !important;
+        font-size: 14px !important;
+      }
+
+      .blocklyText {
+        fill: #000000; 
+      }      
+
+
+      #optionsBtn {
+          position: absolute;
+          top: 5px;
+          right: 5px;
+          z-index: 20;
+          padding: 12px 20px; 
+          font-size: 16px;    
+          background: #2196F3;
+          color: #fff;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+      }
+
+      #optionsMenu {
+          display: none;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: #222;
+          color: #fff;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 0 15px rgba(0,0,0,0.5);
+          z-index: 50;
+          min-width: 300px;
+      }
+
+      #closeOptions {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: #f44336;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 3px;
+      }
+      
+  </style>
+</head>
+<body>
+  <div id="blocklyDiv"></div>
+
+  <button id="optionsBtn">= Options</button>
+
+  <!-- Options Menu -->
+  <div id="optionsMenu">
+    <button id="closeOptions">X</button>
+    
+    <h3>Options</h3>
+
+  <div style="margin-bottom:10px;">
+    <label>Project Name:</label><br>
+    <input type="text" id="projectNameField" value="MyMod" style="width:100%;">
+  </div>
+  <div style="margin-bottom:10px;">
+    <label>Author(s):</label><br>
+    <input type="text" id="projectAuthorField" value="YourName" style="width:100%;">
+  </div>
+  <div style="margin-bottom:10px;">
+    <label>Description:</label><br>
+    <textarea id="projectDescField" style="width:100%;height:60px;">My awesome mod</textarea>
+  </div>
+
+    
+  <button id="manageVarsBtn">Manage Variables</button>
+
+  <!-- Variable Manager Popup -->
+  <div id="varManager" style="
+    display:none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #222;
+    color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 100;
+    width: 300px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.6);
+  ">
+    <button id="closeVarManager" style="
+      position:absolute;
+      top:5px;
+      right:5px;
+      background:#f44336;
+      border:none;
+      color:white;
+      padding:4px 8px;
+      border-radius:3px;
+      cursor:pointer;
+    ">X</button>
+
+    <h3 style="margin-top:0;">Variable Manager</h3>
+    <div id="varList" style="max-height:200px;overflow-y:auto;margin-bottom:10px;"></div>
+
+    <input type="text" id="newVarName" placeholder="New variable name" style="width:100%;padding:5px;border:none;border-radius:4px;margin-bottom:8px;">
+    <button id="addVarBtn" style="width:100%;background:#4caf50;color:white;border:none;border-radius:4px;padding:6px;cursor:pointer;">
+      + Add Variable
+    </button>
+  </div>
+
+    <button id="exportModBtn">Export Mod</button>
+
+    <button id="newProjectBtn">New Project</button>
+    
+    <button id="saveProjectBtn">Save Project</button>
+    <button id="loadProjectBtn">Load Project</button>
+
+    <button id="testBlockBtn">Test Custom Block</button>
+
+    <div style="margin-top:10px;">
+      <label>
+        <input type="checkbox" id="liveLuaToggle"> Live Lua Preview
+      </label>
+    </div>
+
+  </div>
+
+  <xml id="toolbox" style="display:none"></xml>
+  
+  <pre id="liveLuaArea"
+      style="display:none;
+              position:absolute;
+              top:0;
+              right:0;
+              width:400px;
+              height:100%;
+              background:#111;
+              margin:0;
+              padding:10px;
+              overflow:auto;
+              font-family:monospace;
+              border-left:2px solid #333;
+              z-index:10;">
+  <code class="language-lua"></code>              
+  </pre>
+
+  <script src="./libs/jszip.min.js"></script>
+  <script src="./blockly/blockly.min.js"></script>
+  <script src="./scripts/block_defs.js"></script>
+  <script src="./scripts/blocks.js"></script>
+  <script src="./scripts/generators.js"></script>
+  <script src="./scripts/main.js"></script>
+</body>
+</html>

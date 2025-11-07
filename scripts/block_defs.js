@@ -1112,7 +1112,7 @@ function TagBlocks() {
             title: 'Remove all tags',
             category: 'Tags',
             color: '#0f5a33',
-            lua: 'for k, v in pairs(G.GAME.tags) do\nv:remove()\nend',
+            lua: 'for k, v in pairs(G.GAME.tags) do\n    v:remove()\nend',
             tooltip: 'Removes all tags.'
         }
 

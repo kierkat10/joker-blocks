@@ -139,6 +139,33 @@ function refreshVariableDropdowns() {
 
 // === Main setup ===
 window.addEventListener("load", () => {
+
+  const updateBlocklyTheme = () => {
+    if (!window.workspace) return;
+    
+    if (document.body.classList.contains("dark")) {
+      window.workspace.setTheme(Blockly.Theme.defineTheme("darkMode", {
+        base: Blockly.Themes.Classic,
+        componentStyles: {
+          workspaceBackgroundColour: "#121212",
+          toolboxBackgroundColour: "#1f1f1f",
+          toolboxForegroundColour: "#fff",
+          flyoutBackgroundColour: "#1a1a1a",
+          flyoutForegroundColour: "#fff",
+          flyoutOpacity: 1,
+          scrollbarColour: "#555",
+          insertionMarkerColour: "#fff",
+          insertionMarkerOpacity: 0.3,
+          scrollbarOpacity: 0.6,
+          cursorColour: "#fff",
+          textColour: "#fff"
+        }
+      }));
+    } else {
+      window.workspace.setTheme(Blockly.Themes.Classic);
+    }
+  };
+
   // --- Blockly workspace ---
   const toolbox = document.getElementById("toolbox");
   const workspace = Blockly.inject("blocklyDiv", {
@@ -150,6 +177,7 @@ window.addEventListener("load", () => {
     zoom: { controls: true, wheel: true, startScale: 0.5 }
   });
   window.workspace = workspace;
+  updateBlocklyTheme();
 
 
   // --- Project persistence ---
@@ -219,6 +247,25 @@ window.addEventListener("load", () => {
   const saveProjectBtn = document.getElementById("saveProjectBtn");
   const loadProjectBtn = document.getElementById("loadProjectBtn");
   const exportModBtn = document.getElementById("exportModBtn");
+  // --- Dark Mode Toggle ---
+  const DARK_MODE_KEY = "jokerblocks_dark_mode";
+  const darkModeToggle = document.getElementById("darkModeToggle");
+  let darkModeEnabled = localStorage.getItem(DARK_MODE_KEY) === "true";
+
+  if (darkModeEnabled) {
+    document.body.classList.add("dark");
+    darkModeToggle.checked = true;
+  }
+  updateBlocklyTheme();
+
+
+  // call it whenever dark mode changes
+  darkModeToggle.addEventListener("change", () => {
+    darkModeEnabled = darkModeToggle.checked;
+    localStorage.setItem(DARK_MODE_KEY, darkModeEnabled);
+    document.body.classList.toggle("dark", darkModeEnabled);
+    updateBlocklyTheme();
+  });  
   const liveLuaToggle = document.getElementById("liveLuaToggle");
   const liveLuaArea = document.getElementById("liveLuaArea");
 

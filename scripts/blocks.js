@@ -281,7 +281,7 @@ Blockly.Blocks['card_issuit'].init = function() {
 };
 
 Blockly.Blocks['copy_consumeable'].init = function() {
-  this.setColour('#459340');
+  this.setColour('#934057');
 
   this.appendDummyInput()
       .appendField('Copy consumeable, Index:')
@@ -306,6 +306,32 @@ Blockly.Blocks['copy_consumeable'].init = function() {
   this.setNextStatement(true, null);
   this.setInputsInline(true);
   this.setTooltip('Copies a specified indexed or random consumeable. (If you have atleast 1). Set `Index` to the string \'random\' for random Index, if blank (no input socket) then it\'ll resort to random consumeable');
+};
+
+Blockly.Blocks['destroy_card'].init = function() {
+  this.setColour('#934057');
+
+  this.appendDummyInput()
+      .appendField('Destroy,');
+
+  this.appendDummyInput()
+      .appendField(new Blockly.FieldDropdown([
+        ['Joker','joker'],
+        ['Playing Card [in Play]','p_card'],
+        ['Playing Card [in Hand]','h_card'],
+        ['Consumeable','cons'],
+      ]), 'card');     
+
+  this.appendDummyInput()
+      .appendField('Index:');     
+
+  this.appendValueInput('idx')
+      .setCheck(null);      
+
+  this.setPreviousStatement(true, null);
+  this.setNextStatement(true, null);
+  this.setInputsInline(true);
+  this.setTooltip('Destroys a card with an index. (If you have atleast 1). If `Index` is \'random\' or there\'s no text value block index will be random ');
 };
 
 Blockly.Blocks['card_isrank'].init = function() {

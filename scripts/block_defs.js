@@ -617,9 +617,16 @@ function GeneralBlocks() {
             type: 'copy_consumeable',
             title: 'Copy Consumeable',
             category: 'General',
-            color: '#459340',
-            tooltip: 'Copies a specified indexed or random consumeable (If you have atleast 1.)'
-        },                 
+            color: '#599855', // doesn't change here, modification is located in blocks.js
+            tooltip: 'Copies a specified indexed or random consumeable (If you have atleast 1.)' // doesn't change here, modification is located in blocks.js
+        },        
+        {
+            type: 'destroy_card',
+            title: 'Destroy Card(s)', // doesn't change here, modification is located in blocks.js
+            category: 'General',
+            color: '#599855', // doesn't change here, modification is located in blocks.js
+            tooltip: 'Copies a specified indexed or random consumeable (If you have atleast 1.)' // doesn't change here, modification is located in blocks.js
+        },                   
         {
             type: 'atlaskey',
             title: 'Atlas',

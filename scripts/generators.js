@@ -520,6 +520,36 @@ end\n`;
     return code;
 };
 
+Blockly.Lua.forBlock['destroy_card'] = function(block) {
+  const idx = block.getInputTargetBlock('idx');
+  let idxCode = '0'; // default if nothing connected
+
+  if (idx) {
+    const generated = Blockly.Lua.blockToCode(idx);
+    idxCode = Array.isArray(generated) ? generated[0] : generated;
+    idxCode = idxCode.trim();
+  }
+
+  const cardType = block.getFieldValue('card'); // e.g. "joker", "h_card", etc.
+  let luaType = '';
+
+  if (cardType === 'joker') {
+    luaType = 'jokers';
+  } else if (cardType === 'h_card') {
+    luaType = 'hand';
+  } else if (cardType === 'p_card') {
+    luaType = 'play';
+  } else if (cardType === 'cons') {
+    luaType = 'consumeables';
+  } else {
+    luaType = 'unknown'; // fallback
+  }
+
+  const code = `local idx = ${idxCode}\nif #G.${luaType}.cards > 0 and #G.${luaType}.cards <= idx then\n    SMODS.destroy_cards(G.${luaType}.cards[idx])\nend`;
+  return code;
+};
+
+
 Blockly.Lua.forBlock['exact_hand_type'] = function(block) {
     const condition = block.getFieldValue('condition');
     
@@ -704,6 +734,8 @@ Blockly.Lua.forBlock['var_change'] = function(block) {
     
     return code;
 };
+
+
 
 BLOCK_DEFS.forEach(def => {
     if (def.lua) {

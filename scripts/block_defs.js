@@ -123,6 +123,7 @@ function ConditionBlocks() {
                         ['A card is scoring','card score'],   
                         ['Round ended (won)','context.end_of_round and context.game_over == false and context.main_eval'],
                         ['Shop exited','context.ending_shop'],
+                        
                     ]
                 }
             ]
@@ -143,6 +144,10 @@ function ConditionBlocks() {
                         ['Playing Card Repetition','context.repetition and context.cardarea == G.play'],
                         ['Modifying Chances','context.mod_probability'],
                         ['Not Blueprint','not context.blueprint'],  
+                        ['Pre-Discard','context.pre_discard'],
+                        ['Discard','context.discard'],
+                        ['Card Area = Jokers','context.cardarea == G.jokers'],
+                        
                     ]
                 }
             ],
@@ -187,7 +192,13 @@ function ConditionBlocks() {
             lua: '[[card]]:get_id() == [[rank]]',
             output: 'Boolean',
             tooltip: 'Whether or not `card` is `rank` (`card` is the left input socket, `rank` is on the right)',
-        },                                      
+        },          
+        {
+            // most properties changed in blocks.js
+            type: 'in_blind',
+            title: 'In [] Blind',
+            category: 'Conditions',
+        },                                     
     ]
 }
 
@@ -301,8 +312,8 @@ function LogicBlocks() {
             type: 'game_value',
             title: 'Game Value',
             category: 'Logic',
-            color: '#40a5aa',
-            output: 'Number',
+            color: '#4079aa',
+            output: 'String',
             tooltip: 'Gets various game state values.',
             fields: [
                 { 
@@ -330,23 +341,28 @@ function LogicBlocks() {
             type: 'joker_amt',
             title: 'Amount',
             category: 'Logic',
-            color: '#40a5aa',
+            color: '#4079aa',
             output: 'Number',
-            lua: '#SMODS.find_card("[[a]]", true))'
+            lua: '#SMODS.find_card("[[a]]", true)'
         },   
         {
-            type: 'pseudorandom',
-            title: 'Pick random',
+            type: 'card_amt',
+            title: 'Amount',
             category: 'Logic',
-            color: '#40a5aa',
+            color: '#4079aa',
             output: 'Number',
-            //lua: 'psuedorandom("[[seed]]", [[a]], [[b]])'
+        },           
+        {
+            // most properties are in blocks.js
+            type: 'pseudorandom',
+            category: 'Logic',
+            color: '#4079aa',
         },        
         {
             type: 'rand_suit',
             title: 'Random Suit',
             category: 'Logic',
-            color: '#40a5aa',
+            color: '#4079aa',
             output: 'Suit',
             lua: `(function()
     if G.playing_cards then
@@ -368,7 +384,7 @@ end)()`,
             type: 'rand_rank',
             title: 'Random Rank',
             category: 'Logic',
-            color: '#40a5aa',
+            color: '#4079aa',
             output: 'Rank',
             lua: `(function()
     if G.playing_cards then
@@ -390,16 +406,17 @@ end)()`,
             type: 'sc_card',
             title: 'Currently scoring card',
             category: 'Logic',
-            color: '#40a5aa',
+            color: '#4079aa',
             output: 'Card',
             lua: 'context.other_card',
             tooltip: 'Returns the currently scoring card, usually.',
         },    
+        
         {
             type: 'card_count',
             title: 'Amount of played cards',
             category: 'Logic',
-            color: '#40a5aa',
+            color: '#4079aa',
             lua: '#context.full_hand',
             output: 'Number',
             tooltip: 'Returns the amount of cards played.',
@@ -408,7 +425,7 @@ end)()`,
             type: 'suit_return',
             title: '',
             category: 'Logic',
-            color: '#40a5aa',
+            color: '#4079aa',
             lua: '[[suit]]',
             output: 'Suit',
             tooltip: 'Returns a suit.',
@@ -426,7 +443,7 @@ end)()`,
             type: 'rank_return',
             title: '',
             category: 'Logic',
-            color: '#40a5aa',
+            color: '#4079aa',
             lua: '[[rank]]',
             output: 'Rank',
             tooltip: 'Returns a rank.',
@@ -441,10 +458,10 @@ end)()`,
                     [`4`,`'4'`],
                     [`3`,`'3'`],
                     [`2`,`'2'`],
-                    [`Ace`,`'Ace'`],
-                    [`King`,`'King'`],
-                    [`Queen`,`'Queen'`],
-                    [`Jack`,`'Jack'`],                                                         
+                    [`Ace`,`'14'`],
+                    [`King`,`'13'`],
+                    [`Queen`,`'12'`],
+                    [`Jack`,`'11'`],                                                         
                 ]
             }
             ]
@@ -453,7 +470,7 @@ end)()`,
             type: 'limit',
             title: 'Limit',
             category: 'Logic',
-            color: '#40a5aa',
+            color: '#4079aa',
             output: 'Number',
             valueInputs: [
                 { name: 'val', label: 'Value', check: null },
@@ -523,6 +540,17 @@ function ControlBlocks() {
             ],
             tooltip: 'Triggers blocks if condition is met.'
         },
+        {
+            type: 'if_else',
+            title: 'If',
+            category: 'Control',
+            color: '#d07046',
+            tooltip: 'Triggers blocks if condition is met, otherwise triggers else blocks.',
+            valueInputs: [
+                { name: 'condition', label: '', check: 'Boolean' }
+            ],
+            // other stuff is handled in blocks.js
+        },        
         {
             type: 'repeat',
             title: 'Repeat',
@@ -621,12 +649,21 @@ function GeneralBlocks() {
             tooltip: 'Copies a specified indexed or random consumeable (If you have atleast 1.)' // doesn't change here, modification is located in blocks.js
         },        
         {
+            // most modifications are in blocks.js
             type: 'destroy_card',
-            title: 'Destroy Card(s)', // doesn't change here, modification is located in blocks.js
+            title: 'Destroy Card(s)', 
             category: 'General',
-            color: '#599855', // doesn't change here, modification is located in blocks.js
-            tooltip: 'Copies a specified indexed or random consumeable (If you have atleast 1.)' // doesn't change here, modification is located in blocks.js
-        },                   
+            color: '#599855', 
+            tooltip: 'Copies a specified indexed or random consumeable (If you have atleast 1.)'
+        },  
+        {
+            type: 'disable_blind',
+            title: 'Disable Boss Blind', 
+            category: 'General',
+            color: '#98556c', 
+            tooltip: 'Disables the Boss Blind effect',
+            lua: 'G.GAME.blind:disable()'
+        },
         {
             type: 'atlaskey',
             title: 'Atlas',
@@ -732,7 +769,15 @@ function CreationBlocks() {
             color: '#83b735',
             lua: 'set = "[[a]]",\n',
             fields: [
-                { name: 'a', label: 'Type', type: 'dropdown', options: ['Joker', 'Spectral', 'Playing Card', 'Tarot', 'Planet'] }
+                { name: 'a', label: 'Type', type: 'dropdown', options: [
+                    'Joker', 
+                    'Spectral', 
+                    ['(Base/Enhanced) Playing Card','Playing Card'], 
+                    ['(Base) Playing Card','Base'],
+                    ['(Enhanced) Playing Card','Enhanced'],
+                    'Tarot', 
+                    'Planet',
+                ]},
             ],
             tooltip: 'The card type to be generated.',
             previousStatement: 'CreationFunction',
@@ -815,17 +860,59 @@ function CreationBlocks() {
             nextStatement: 'CreationFunction',
         },
         {
-            type: 'card_key',
+            type: 'card_sr',
             title: '',
             category: 'Creation',
             color: '#83b735',
-            lua: 'rank = "[[a]]",\nsuit = "[[b]]",\n',
+            lua: 'front = G.P_CARDS["[[suit]][[rank]]"],\n',
             fields: [
-                { name: 'a', label: 'Card Rank', type: 'dropdown', options: ['Ace','Jack','King','Queen','10','9','8','7','6','5','4','3','2']},
-                { name: 'b', label: 'Card Suit', type: 'dropdown', options: ['Hearts','Clubs','Diamonds','Spades']},
+                { name: 'rank', label: 'Card Rank', type: 'dropdown', options: [
+                    ['Random','r'],
+                    ['Ace','A'],
+                    ['Jack','J'],
+                    ['King','K'],
+                    ['Queen','Q'],
+                    ['10','1'],
+                    ['9','9'],
+                    ['8','8'],
+                    ['7','7'],
+                    ['6','6'],
+                    ['5','5'],
+                    ['4','4'],
+                    ['3','3'],
+                    ['2','2']
+                ]},
+                { name: 'suit', label: 'Card Suit', type: 'dropdown', options: [
+                    ['Random','r'],
+                    ['Hearts','H'],
+                    ['Clubs','C'],
+                    ['Diamonds','D'],
+                    ['Spades','S'],
+                ]},
             ],
             tooltip: "Define Rank and Suit of the playing card."
         },
+        {
+            type: 'card_en',
+            title: '',
+            category: 'Creation',
+            color: '#83b735',
+            lua: 'enhancement = [[enhance]],\n',
+            fields: [
+                { name: 'enhance', label: 'Card Enhancement', type: 'dropdown', options: [
+                    ['Random',`pseudorandom_element({G.P_CENTERS.m_gold, G.P_CENTERS.m_steel, G.P_CENTERS.m_glass, G.P_CENTERS.m_wild, G.P_CENTERS.m_mult, G.P_CENTERS.m_lucky, G.P_CENTERS.m_stone}, pseudoseed('add_card_enhancement'))`],
+                    ['Gold','m_gold'],
+                    ['Steel','m_steel'],
+                    ['Glass','m_glass'],
+                    ['Wild','m_wild'],
+                    ['Mult','m_mult'],
+                    ['Lucky','m_lucky'],
+                    ['Stone','m_stone'],
+                    
+                ]},
+            ],
+            tooltip: "Define Rank and Suit of the playing card."
+        },        
         {
             type: 'enhanced_poll',
             title: '',
@@ -867,6 +954,24 @@ function JokerFunctionBlocks() {
             ],
             tooltip: 'Rarity for this Joker. 1 = Common, 2 = Uncommon, 3 = Rare, 4 = Legendary. For custom rarities use "modprefix_Rarity"'
         },     
+        {
+            type: 'joker_pos',
+            title: 'My Position',
+            category: 'Joker',
+            color: '#40a5aa',
+            output: 'String',
+            tooltip: 'Gets the index of this Joker.',
+            lua: `(function()
+    local my_pos = nil
+    for i = 1, #G.jokers.cards do
+        if G.jokers.cards[i] == card then
+            my_pos = i
+            return my_pos
+            break
+        end
+    end
+end)()`,
+        },        
         {
             type: 'joker_status',
             title: 'Status:',

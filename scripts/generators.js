@@ -19,6 +19,28 @@ function indentLua(code, level = 1) {
     .join('\n');
 }
 
+// Track declared local variables per generation
+let declaredLocals = new Set();
+
+function isLocalVarDeclared(varName) {
+  return declaredLocals.has(varName);
+}
+
+function markLocalVarDeclared(varName) {
+  declaredLocals.add(varName);
+}
+
+function resetLocalVarTracking() {
+  declaredLocals = new Set();
+}
+
+// Hook into workspace code generation to reset tracking
+const originalWorkspaceToCode = Blockly.Lua.workspaceToCode;
+Blockly.Lua.workspaceToCode = function(workspace) {
+  resetLocalVarTracking();
+  return originalWorkspaceToCode.call(this, workspace);
+};
+
 function genLuaFromTemplate(template, block) {
   
   let result = template;
@@ -247,11 +269,46 @@ Blockly.Lua.forBlock['check_suit'] = function(block) {
 };
 
 Blockly.Lua.forBlock['pseudorandom'] = function(block) {
-  const a = block.getFieldValue('a') || 'nil';
-  const b = block.getFieldValue('b') || 'nil';
+  const minBlock = block.getInputTargetBlock('min');
+  const maxBlock = block.getInputTargetBlock('max');
   const seed = generateRandomString(10);
 
-  return [`psuedorandom("${seed}" .. G.GAME.round, ${a}, ${b})`, Blockly.Lua.ORDER_ATOMIC];
+  let minCode = '0';
+  let maxCode = '0';
+
+  if (minBlock) {
+    const generated = Blockly.Lua.blockToCode(minBlock);
+    minCode = Array.isArray(generated) ? generated[0] : generated;
+    minCode = minCode.replace(/\n$/, '');
+  }
+
+  if (maxBlock) {
+    const generated = Blockly.Lua.blockToCode(maxBlock);
+    maxCode = Array.isArray(generated) ? generated[0] : generated;
+    maxCode = maxCode.replace(/\n$/, '');
+  }
+
+  return [`pseudorandom(pseudoseed('${seed}'), ${minCode}, ${maxCode})`, Blockly.Lua.ORDER_ATOMIC];
+};
+
+Blockly.Lua.forBlock['if_else'] = function(block) {
+  const conditionBlock = block.getInputTargetBlock('condition');
+  const ifBody = Blockly.Lua.statementToCode(block, 'if_body');
+  const elseBody = Blockly.Lua.statementToCode(block, 'else_body');
+  
+  let conditionCode = 'false';
+  if (conditionBlock) {
+    const generated = Blockly.Lua.blockToCode(conditionBlock);
+    conditionCode = Array.isArray(generated) ? generated[0] : generated;
+    conditionCode = conditionCode.replace(/\n$/, '');
+  }
+
+  const indentedIf = indentLua(ifBody, 1);
+  const indentedElse = indentLua(elseBody, 1);
+
+  let code = `if ${conditionCode} then\n${indentedIf}\nelse\n${indentedElse}\nend\n`;
+  
+  return code;
 };
 
 Blockly.Lua.forBlock['minus'] = function(block) {
@@ -532,6 +589,7 @@ Blockly.Lua.forBlock['destroy_card'] = function(block) {
 
   const cardType = block.getFieldValue('card'); // e.g. "joker", "h_card", etc.
   let luaType = '';
+  const seed = generateRandomString(10);
 
   if (cardType === 'joker') {
     luaType = 'jokers';
@@ -545,8 +603,23 @@ Blockly.Lua.forBlock['destroy_card'] = function(block) {
     luaType = 'unknown'; // fallback
   }
 
-  const code = `local idx = ${idxCode}\nif #G.${luaType}.cards > 0 and #G.${luaType}.cards <= idx then\n    SMODS.destroy_cards(G.${luaType}.cards[idx])\nend`;
+  if (idxCode == 'random') {
+    idxCode = `pseudorandom("${seed}", 1, #G.${luaType}.cards)`;
+  }
+
+  let code = '';
+  if (idxCode != 'all') {
+    code = `local idx = ${idxCode}\nif #G.${luaType}.cards > 0 and #G.${luaType}.cards <= idx then\n    SMODS.destroy_cards(G.${luaType}.cards[idx])\nend`;
+  } else {
+    code = `for k, v in pairs(G.${luaType}.cards) do\n    SMODS.destroy_cards(v)\nend`;
+  }
   return code;
+};
+
+Blockly.Lua.forBlock['card_amt'] = function(block) {
+  const type = block.getFieldValue('type');
+  
+  return `#G.${type}.cards`;
 };
 
 
@@ -653,6 +726,18 @@ Blockly.Lua['repeat_block'] = function(block) {
   return code;
 };
 
+Blockly.Lua.forBlock['in_blind'] = function(block) {
+  const type = block.getFieldValue('type');
+
+  let code = '';
+  if (type === 'any') {
+    code = `G.GAME.blind`;
+  } else if (type === 'boss') {
+    code = `G.GAME.blind and G.GAME.blind.boss`;
+  }
+  return code;
+};
+
 Blockly.Lua.forBlock['change_sfreq'] = function(block) {
     const req = block.getFieldValue('a') || '4';
     const rawId = (block.getFieldValue('id') || 'four_fingers').trim();
@@ -685,7 +770,7 @@ Blockly.Lua.forBlock['var_get'] = function(block) {
     const scope = window.variableScopes?.[varName] || 'global';
     
     if (scope === 'local') {
-        return [varName, Blockly.Lua.ORDER_ATOMIC];
+        return [`LOCALVAR_${varName}`, Blockly.Lua.ORDER_ATOMIC];
     } else {
         return [`G.GAME.${varName}`, Blockly.Lua.ORDER_ATOMIC];
     }
@@ -705,7 +790,17 @@ Blockly.Lua.forBlock['var_set'] = function(block) {
     
     let code;
     if (scope === 'local') {
-        code = `local ${varName} = ${valueCode}\n`;
+        const localVarName = `LOCALVAR_${varName}`;
+        
+        // Check if already declared
+        if (isLocalVarDeclared(localVarName)) {
+            // Already declared, just assign
+            code = `${localVarName} = ${valueCode}\n`;
+        } else {
+            // First time, declare it
+            code = `local ${localVarName} = ${valueCode}\n`;
+            markLocalVarDeclared(localVarName);
+        }
     } else {
         code = `G.GAME.${varName} = ${valueCode}\n`;
     }
@@ -727,7 +822,7 @@ Blockly.Lua.forBlock['var_change'] = function(block) {
     
     let code;
     if (scope === 'local') {
-        code = `local ${varName} = (${varName} or 0) + (${deltaCode})\n`;
+        code = `LOCALVAR_${varName} = (LOCALVAR_${varName} or 0) + (${deltaCode})\n`;
     } else {
         code = `G.GAME.${varName} = (G.GAME.${varName} or 0) + (${deltaCode})\n`;
     }

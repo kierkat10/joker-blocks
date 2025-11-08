@@ -178,7 +178,7 @@ window.addEventListener("load", () => {
   });
   window.workspace = workspace;
   updateBlocklyTheme();
-
+  loadVariableScopes();
 
   // --- Project persistence ---
   const WORKSPACE_KEY = "jokerblocks_workspace";

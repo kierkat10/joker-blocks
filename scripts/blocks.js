@@ -187,30 +187,7 @@ Object.keys(Blockly.Blocks).forEach(blockType => {
     }
 });
 
-Blockly.Blocks['compare'].init = function() {
-  this.setColour('#5cb85c');
-  this.setOutput(true, 'Boolean');
 
-  this.appendValueInput('A')
-      .setCheck(null);
-
-  this.appendDummyInput()
-      .appendField(new Blockly.FieldDropdown([
-        ['==', '=='],
-        ['!=', '~='],
-        ['>', '>'],
-        ['<', '<'],
-        ['>=', '>='],
-        ['<=', '<=']
-      ]), 'OP');
-
-  this.appendValueInput('B')
-      .setCheck(null)
-      .appendField(''); 
-
-  this.setInputsInline(true);
-  this.setTooltip('Compares two values.');
-};
 
 Blockly.Blocks['givex'].init = function() {
   this.setColour('#26aa96');
@@ -305,7 +282,7 @@ Blockly.Blocks['copy_consumeable'].init = function() {
   this.setPreviousStatement(true, null);
   this.setNextStatement(true, null);
   this.setInputsInline(true);
-  this.setTooltip('Copies a specified indexed or random consumeable. (If you have atleast 1). Set `Index` to the string \'random\' for random Index, if blank (no input socket) then it\'ll resort to random consumeable');
+  this.setTooltip('Copies a specified indexed or random consumeable. (If you have atleast 1). `Index` being \'random\' will result in a random index.');
 };
 
 Blockly.Blocks['destroy_card'].init = function() {
@@ -331,8 +308,30 @@ Blockly.Blocks['destroy_card'].init = function() {
   this.setPreviousStatement(true, null);
   this.setNextStatement(true, null);
   this.setInputsInline(true);
-  this.setTooltip('Destroys a card with an index. (If you have atleast 1). If `Index` is \'random\' or there\'s no text value block index will be random ');
+  this.setTooltip('Destroys a card with an index. `Index` being \'random\' will result in a random index, `Index` being \'all\' will destroy all of `Cards` ');
 };
+
+Blockly.Blocks['in_blind'].init = function() {
+  this.setColour('#725cb8');
+
+  this.appendDummyInput()
+      .appendField('In');
+
+  this.appendDummyInput()
+      .appendField(new Blockly.FieldDropdown([
+        ['Any','any'],
+        ['Boss','boss'],
+      ]), 'type');     
+
+  this.appendDummyInput()
+      .appendField('Blind?');      
+
+
+  this.setOutput(true, 'Boolean');
+  this.setInputsInline(true);
+  this.setTooltip('Checks if you\'re in any or specifically a boss blind.');
+};
+
 
 Blockly.Blocks['card_isrank'].init = function() {
   this.setColour('#725cb8');
@@ -351,7 +350,7 @@ Blockly.Blocks['card_isrank'].init = function() {
 };
 
 Blockly.Blocks['joker_amt'].init = function() {
-  this.setColour('#40a5aa');
+  this.setColour('#4079aa');
   this.setOutput(true, 'Number');
 
   this.appendDummyInput()
@@ -361,26 +360,90 @@ Blockly.Blocks['joker_amt'].init = function() {
       .setCheck(null);
 
   this.appendDummyInput()
-      .appendField('Jokers held')
+      .appendField('held')
+      
+  this.setInputsInline(true);
+  this.setTooltip('Calculates how many cards of the given `id` is currently held. (e.g., "j_joker")');
+};
+
+Blockly.Blocks['if_else'].init = function() {
+  this.setColour('#d07046');
+  
+  this.appendValueInput('condition')
+      .setCheck('Boolean')
+      .appendField('If');
+  
+  this.appendStatementInput('if_body')
+      .setCheck(null)
+  
+  this.appendStatementInput('else_body')
+      .setCheck(null)
+      .appendField('else');
+  
+  this.setPreviousStatement(true, null);
+  this.setNextStatement(true, null);
+  this.setTooltip('Triggers blocks if condition is met, otherwise triggers else blocks.');
+};
+
+Blockly.Blocks['card_amt'].init = function() {
+  this.setColour('#4079aa');
+  this.setOutput(true, 'Number');
+
+  this.appendDummyInput()
+      .appendField('Amount of')
+
+  this.appendDummyInput()
+      .appendField(new Blockly.FieldDropdown([
+        ['Jokers','jokers'],
+        ['Consumeables','consumeables'],
+        ['Cards in Play','play'],
+        ['Cards in Hand','hand'],
+      ]), 'type');
+      
       
   this.setInputsInline(true);
   this.setTooltip('Calculates how many jokers of the given `id` is currently held.');
 };
 
+Blockly.Blocks['compare'].init = function() {
+  this.setColour('#5cb85c');
+  this.setOutput(true, 'Boolean');
+
+  this.appendValueInput('A')
+      .setCheck(null);
+
+  this.appendDummyInput()
+      .appendField(new Blockly.FieldDropdown([
+        ['==', '=='],
+        ['!=', '~='],
+        ['>', '>'],
+        ['<', '<'],
+        ['>=', '>='],
+        ['<=', '<=']
+      ]), 'OP');
+
+  this.appendValueInput('B')
+      .setCheck(null)
+      .appendField(''); 
+
+  this.setInputsInline(true);
+  this.setTooltip('Compares two values.');
+};
+
 Blockly.Blocks['pseudorandom'].init = function() {
-  this.setColour('#40a5aa');
+  this.setColour('#4079aa');
   this.setOutput(true, 'Number');
 
   this.appendDummyInput()
       .appendField('Pick random')
 
-  this.appendValueInput('a')
+  this.appendValueInput('min')
       .setCheck(null);
 
   this.appendDummyInput()
       .appendField('to')
 
-  this.appendValueInput('b')
+  this.appendValueInput('max')
       .setCheck(null);
 
   this.setInputsInline(true);

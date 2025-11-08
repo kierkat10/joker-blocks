@@ -55,10 +55,9 @@
   };
 })();
 
-// === VARIABLE SYSTEM HELPERS ===
-
 // load vars from localStorage
 window.customVariables = JSON.parse(localStorage.getItem("customVariables") || "[]");
+window.defaultVarScope = localStorage.getItem("jokerblocks_default_var_scope") || "global"; // Make this global
 
 // save to localStorage
 function saveVariables() {
@@ -104,7 +103,15 @@ function createNewVariablePopup(onDone) {
     const name = input.value.trim();
     if (name && !window.customVariables.includes(name)) {
       window.customVariables.push(name);
+      
+      // Apply the default scope to new variables
+      if (!window.variableScopes) {
+        window.variableScopes = {};
+      }
+      window.variableScopes[name] = window.defaultVarScope;
+      
       saveVariables(); // persist to localStorage
+      saveVariableScopes(); // persist scopes to localStorage
       refreshVariableDropdowns();
       if (onDone) onDone(name);
     }

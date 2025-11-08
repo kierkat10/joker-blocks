@@ -358,6 +358,7 @@ function LogicBlocks() {
                         ['Discards Left','G.GAME.current_round.discards_left'],
                         ['Hands Left','G.GAME.current_round.hands_left'],
                         ['(Amount of) Cards in Play','#G.play.cards'],
+                        ['(Amount of) Cards in Hand','#G.hand.cards'],
                         ['Empty Joker Slots','(G.jokers.config.card_limit - #G.jokers.cards)'],
                         ['Maximum Bankruptcy','G.GAME.bankrupt_at'],
                         ['Chance Numerator','context.numerator'],

@@ -139,7 +139,16 @@ function refreshVariableDropdowns() {
 
 // === Main setup ===
 window.addEventListener("load", () => {
+  const DEFAULT_VAR_SCOPE_KEY = "jokerblocks_default_var_scope";
+  let defaultVarScope = localStorage.getItem(DEFAULT_VAR_SCOPE_KEY) || "global";
 
+  const defaultVarScopeSelect = document.getElementById("defaultVarScopeSelect");
+  defaultVarScopeSelect.value = defaultVarScope;
+
+  defaultVarScopeSelect.addEventListener("change", () => {
+    defaultVarScope = defaultVarScopeSelect.value;
+    localStorage.setItem(DEFAULT_VAR_SCOPE_KEY, defaultVarScope);
+  });  
   const updateBlocklyTheme = () => {
     if (!window.workspace) return;
     
@@ -669,13 +678,19 @@ window.addEventListener("load", () => {
       return;
     }
     window.customVariables.push(name);
+    
+    // Apply the default scope to new variables
+    if (!window.variableScopes) {
+      window.variableScopes = {};
+    }
+    window.variableScopes[name] = defaultVarScope;
+    
     newVarName.value = '';
     refreshVariableDropdowns();
     renderVarList();
     saveVariables();
-
-  };
-
+    saveVariableScopes();
+  };  
 
   // --- Buttons ---
   function saveProjectFile() {

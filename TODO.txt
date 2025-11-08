@@ -1,0 +1,3 @@
+1. Make a switchable Code Area Sidebar with rename, delete, delete all (except top), 
+   and when exporting mod zip, generate seperate .lua files for each code area like apple.lua and banana.lua
+   and at ./src/ and make a main.lua (at ./) which loads all of them

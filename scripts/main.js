@@ -245,8 +245,6 @@ window.addEventListener("load", () => {
       }
   }
 
-
-
   workspace.addChangeListener(saveWorkspace);
   loadWorkspace();
 

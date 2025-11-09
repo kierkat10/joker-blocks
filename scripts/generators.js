@@ -357,6 +357,27 @@ Blockly.Lua.forBlock['add'] = function(block) {
     return [code, Blockly.Lua.ORDER_ATOMIC];
 };
 
+Blockly.Lua.forBlock['modulo'] = function(block) {
+    const leftBlock = block.getInputTargetBlock('A');
+    const rightBlock = block.getInputTargetBlock('B');
+    
+    let leftCode = '';
+    let rightCode = '';
+    
+    if (leftBlock) {
+        const generated = Blockly.Lua.blockToCode(leftBlock);
+        leftCode = Array.isArray(generated) ? generated[0] : generated;
+    }
+    
+    if (rightBlock) {
+        const generated = Blockly.Lua.blockToCode(rightBlock);
+        rightCode = Array.isArray(generated) ? generated[0] : generated;
+    }
+    
+    const code = `((${leftCode}) % (${rightCode}))`;
+    return [code, Blockly.Lua.ORDER_ATOMIC];
+};
+
 Blockly.Lua.forBlock['multiply'] = function(block) {
     const leftBlock = block.getInputTargetBlock('left');
     const rightBlock = block.getInputTargetBlock('right');

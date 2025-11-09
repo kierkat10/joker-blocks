@@ -413,7 +413,14 @@ function LogicBlocks() {
             category: 'Logic',
             color: '#4079aa',
             output: 'Number',
-        },           
+        },        
+        {
+            type: 'modulo',
+            title: 'modulo',
+            category: 'Logic',
+            color: '#4079aa',
+            output: 'Number',
+        },                  
         {
             // most properties are in blocks.js
             type: 'pseudorandom',

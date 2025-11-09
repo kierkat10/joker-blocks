@@ -271,6 +271,23 @@ Blockly.Blocks['card_hasnorank'].init = function() {
   this.setInputsInline(true);
 };
 
+Blockly.Blocks['modulo'].init = function() {
+  this.setColour('#4079aa');
+  this.setOutput(true, 'Number');
+
+  this.appendValueInput('A')
+      .setCheck(null);
+
+  this.appendDummyInput()
+      .appendField('modulo')    
+
+  this.appendValueInput('B')
+      .setCheck(null);      
+
+  this.setTooltip('Returns the remainder or signed remainder of a division.');
+  this.setInputsInline(true);
+};
+
 Blockly.Blocks['localize'].init = function() {
   this.setColour('#4079aa');
   this.setOutput(true, 'String');
